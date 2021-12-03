@@ -14,11 +14,11 @@ classdef twolink
     A_func
   end
   methods
-    function obj = twolink()
+    function obj = twolink(dt)
       syms th1 th2 dth1 dth2
       x_sym = [th1; th2; dth1; dth2];
       f = obj.dae(x_sym, sym([0.0;0.0]));
-      A_sym = simplify(jacobian(f, x_sym));
+      A_sym = simplify(eye(4)+jacobian(f*dt, x_sym));
       obj.A_func = matlabFunction(A_sym, 'vars', [th1, th2, dth1, dth2]);
     end
     

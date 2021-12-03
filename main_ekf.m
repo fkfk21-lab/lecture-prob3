@@ -1,13 +1,13 @@
 clear;
 Ts = 0.01;
-t = 0:Ts:5;
+t = 0:Ts:10;
 
 x0 = [0.0; pi/4; 0; 0];
 P0 = diag([0.5, 0.5, 0.1, 0.1]);
 Q = diag([0.001, 0.001, 0.01, 0.01]);
 obs_noise_std = 0.01;
 R = obs_noise_std^2;
-model = twolink;
+model = twolink(Ts);
 filter = ekf(model, Ts, x0, P0, Q, R);
 u = [0; 0];
 

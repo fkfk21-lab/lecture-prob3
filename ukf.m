@@ -4,17 +4,19 @@ classdef ukf < handle
     dt;
     x_est;
     P_est;
+    Q;
     R;
     dim_state;
     dim_obs;
   end
   
   methods
-    function obj = ukf(model, dt, x0, P0, R)
+    function obj = ukf(model, dt, x0, P0,Q, R)
       obj.model = model;
       obj.dt = dt;
       obj.x_est = x0;
       obj.P_est = P0;
+      obj.Q = Q;
       obj.R = R;
       obj.dim_state = length(x0);
       obj.dim_obs = length(R);
@@ -35,16 +37,19 @@ classdef ukf < handle
       end
     end
     
-    function [x_est, P_est] = estimate(obj, obs, input)      
+    function [x_est, P_est] = estimate(obj, obs, input)
       % ƒTƒ“ƒvƒ‹“_(Sigma Points)‚Ì¶¬
-      [Chi, W] = obj.generate_sigma_points(obj.x_est, obj.P_est);
-      display(Chi)
+      xa = [obj.x_est; zeros([obj.dim_state], 1)];
+      Pa = blkdiag(obj.P_est, obj.Q);
+      [Chi, W] = obj.generate_sigma_points(xa, Pa);
       % —\‘ª•½‹Ï‚ðŒvŽZ
-      Chi_pred = Chi;
+      Chi_pred = Chi(1:obj.dim_state, :);
       x_pred = zeros(size(obj.x_est));
       for i = 1:length(Chi)
-        chi_pred = Chi(:,i) + obj.model.dae(Chi(:,i), input)*obj.dt;
-        Chi_pred(:, i) = chi_pred;
+        noise = diag(Chi(obj.dim_state+1:obj.dim_state*2, i));
+        chi_pred = Chi(1:obj.dim_state,i) + ...
+                   obj.model.state_equation(Chi(1:obj.dim_state,i), input, noise*noise)*obj.dt;
+        Chi_pred(1:obj.dim_state, i) = chi_pred;
         w = W(:,i);
         x_pred = x_pred + w * chi_pred;
       end

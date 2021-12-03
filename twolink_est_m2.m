@@ -14,13 +14,13 @@ classdef twolink_est_m2
     A_func
   end
   methods
-    function obj = twolink_est_m2(m2_0)
+    function obj = twolink_est_m2(m2_0,dt)
       obj.m2 = m2_0;
-      syms th1 th2 dth1 dth2
-      x_sym = [th1; th2; dth1; dth2];
-      f = obj.dae([x_sym; sym(m2_0)], sym([0.0;0.0]));
-      A_sym = simplify(jacobian(f, x_sym));
-      obj.A_func = matlabFunction(A_sym, 'vars', [th1, th2, dth1, dth2]);
+      syms th1 th2 dth1 dth2 m2
+      x_sym = [th1; th2; dth1; dth2; m2];
+      f = obj.dae(x_sym, sym([0.0;0.0]));
+      A_sym = simplify(eye(5)+jacobian(f*dt, x_sym));
+      obj.A_func = matlabFunction(A_sym, 'vars', [th1, th2, dth1, dth2, m2]);
     end
     
     function ret = D(obj, q)
@@ -49,7 +49,8 @@ classdef twolink_est_m2
       th2 = x(2);
       dth1 = x(3);
       dth2 = x(4);
-      ret = obj.A_func(th1, th2, dth1, dth2);
+      m2_ = x(5);
+      ret = obj.A_func(th1, th2, dth1, dth2, m2_);
     end
     
     function ret = C(obj, x)

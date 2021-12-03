@@ -2,14 +2,14 @@ clear;
 Ts = 0.01;
 t = 0:Ts:10;
 
-x0 = [0.0; pi/4; 0; 0; 8.0];
+x0 = [0.0; pi/4; 0; 0; 6.0];
 P0 = diag([0.5, 0.5, 0.1, 0.1 1.0]);
 obs_noise_std = 0.01;
-Q = diag([0.001, 0.001, 0.01, 0.01]);
+Q = diag([0.001, 0.001, 0.01, 0.01, 1.0e-5]);
 R = obs_noise_std^2;
-model_true = twolink;
-model = twolink_est_m2(x0(5));
-filter = ukf(model, Ts, x0, P0, R);
+model_true = twolink(Ts);
+model = twolink_est_m2(x0(5),Ts);
+filter = ukf(model, Ts, x0, P0, Q, R);
 u = [0; 0];
 
 % storage for logging
